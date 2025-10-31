@@ -1,4 +1,5 @@
 using Bogus;
+using Dapper;
 using DataAnnotations.Data;
 using DataAnnotations.Services;
 using Microsoft.Data.Sqlite;
@@ -25,6 +26,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IEFCoreRepository, EFCoreRepository>();
 builder.Services.AddScoped<IEFCoreService, EFCoreService>();
+
+var connectionString = "DataSource=./Data/SqliteDB.db";
+builder.Services.AddSingleton<IDapperRepository>(new DapperRepository(connectionString));
+builder.Services.AddScoped<IDapperService, DapperService>();
+
+SqlMapper.AddTypeHandler(new GuidTypeHandler());
 
 
 var app = builder.Build();

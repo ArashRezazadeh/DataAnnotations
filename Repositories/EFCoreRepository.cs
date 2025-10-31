@@ -2,8 +2,8 @@
 
 using DataAnnotations.Data;
 using Microsoft.EntityFrameworkCore;
-using Repositories.Data;
 
+namespace Repositories.Data;
 public class EFCoreRepository(AppDbContext context) : IEFCoreRepository
 {
     public async Task<EventRegistration?> GetEventRegistrationByIdAsync(int id)

@@ -18,6 +18,7 @@ public class EventRegistrationDTO
 
 
     [Required]
+    [AllowedValues("C# Conference", "WebAPI Workshop", ".NET Hangout")]
     public string EventName { get; set; } = string.Empty;
 
 

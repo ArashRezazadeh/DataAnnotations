@@ -6,11 +6,13 @@ data from the same database. We will create validation rules using .NET DataAnno
 
 
 ### Packages: 
-dotnet add package Bogus
-dotnet add package Dapper
-dotnet add package Microsoft.Data.Sqlite
-dotnet add package Microsoft.EntityFrameworkCore.Sqlite
-dotnet add package Scalar.AspNetCore
+* dotnet add package Bogus
+* dotnet add package Dapper
+* dotnet add package Microsoft.Data.Sqlite
+* dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+* dotnet add package Scalar.AspNetCore
+* dotnet add package FluentValidation.AspNetCore
+
 
 ### Folder Structure: 
 Controllers

@@ -1,7 +1,6 @@
 # Model validation with data annotations
 
-we will use DataAnnotations to apply model validation. The starter project for this 
-chapter is a Web API with two controllers. Both controllers have one endpoint that returns identical 
+we will use DataAnnotations to apply model validation.  Both controllers have one endpoint that returns identical 
 data from the same database. We will create validation rules using .NET DataAnnotations.
 
 

@@ -1,7 +1,10 @@
 using Bogus;
 using Dapper;
 using DataAnnotations.Data;
+using DataAnnotations.Models;
 using DataAnnotations.Services;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Data;
@@ -21,6 +24,9 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<EventRegistrationDTOValidator>();
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("DataSource=./Data/SqliteDB.db" ));
 

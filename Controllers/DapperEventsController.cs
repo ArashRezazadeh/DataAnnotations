@@ -98,4 +98,22 @@ public class DapperEventsController(IDapperService service, ILogger<DapperEvents
 
     }
 
+    [HttpPost("with-fluent-validation")]
+    [EndpointSummary("Create a new event registration")]
+    [EndpointDescription("POST to create a new event registration.  Accepts a EventRegisrationDTO.")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> PostEventRegistrationForValidation([FromBody] EventRegistrationForValidationDTO eventRegistrationDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var createdEvent = await service.CreateEventRegistrationAsync(eventRegistrationDto);
+
+        return CreatedAtAction(nameof(GetEventRegistrationById), new { id = createdEvent.Id }, createdEvent);
+
+    }
+
 }

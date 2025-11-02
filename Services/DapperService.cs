@@ -32,6 +32,31 @@ public class DapperService(IDapperRepository repository) : IDapperService
         };
     }
 
+    public async Task<EventRegistrationForValidationDTO> CreateEventRegistrationAsync(EventRegistrationForValidationDTO eventRegistrationDTO)
+    {
+        var eventRegistration = new EventRegistration
+        {
+            FullName = eventRegistrationDTO.FullName,
+            Email = eventRegistrationDTO.Email,
+            EventName = eventRegistrationDTO.EventName,
+            EventDate = eventRegistrationDTO.EventDate,
+            DaysAttending = eventRegistrationDTO.DaysAttending
+        };
+
+        var result = await repository.CreateEventRegistrationAsync(eventRegistration);
+
+        return new EventRegistrationForValidationDTO
+        {
+            Id = result.Id,
+            FullName = result.FullName,
+            Email = result.Email,
+            EventName = result.EventName,
+            EventDate = result.EventDate,
+            ConfirmEmail = result.Email,
+            DaysAttending = result.DaysAttending
+        };
+    }
+
     public async Task<EventRegistrationDTO?> GetEventRegistrationByIdAsync(int id)
     {
         var eventRegistration = await repository.GetEventRegistrationByIdAsync(id);

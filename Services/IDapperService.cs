@@ -11,4 +11,6 @@ public interface IDapperService
     Task<EventRegistrationDTO?> GetEventRegistrationByIdAsync(int id);
 
     Task<EventRegistrationDTO> CreateEventRegistrationAsync(EventRegistrationDTO eventRegistrationDTO);
+
+    Task<EventRegistrationForValidationDTO> CreateEventRegistrationAsync(EventRegistrationForValidationDTO eventRegistrationDTO);
 }

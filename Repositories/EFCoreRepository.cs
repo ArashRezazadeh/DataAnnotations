@@ -6,6 +6,18 @@ using Microsoft.EntityFrameworkCore;
 namespace Repositories.Data;
 public class EFCoreRepository(AppDbContext context) : IEFCoreRepository
 {
+    public async Task<EventRegistration> CreateEventRegistrationAsync(EventRegistration eventRegistration)
+    {
+        if (context.EventRegistrations == null)
+        {
+            throw new InvalidOperationException("EventRegistrations DbSet is null");
+        } 
+
+        context.EventRegistrations.Add(eventRegistration);
+        await context.SaveChangesAsync();
+        return eventRegistration;
+    }
+
     public async Task<EventRegistration?> GetEventRegistrationByIdAsync(int id)
     {
         return await context.EventRegistrations.FindAsync(id);

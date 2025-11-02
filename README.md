@@ -1,16 +1,17 @@
 # Model validation with data annotations
 
-we will use DataAnnotations to apply model validation. The starter project for this 
-chapter is a Web API with two controllers. Both controllers have one endpoint that returns identical 
+we will use DataAnnotations to apply model validation.  Both controllers have one endpoint that returns identical 
 data from the same database. We will create validation rules using .NET DataAnnotations.
 
 
 ### Packages: 
-dotnet add package Bogus
-dotnet add package Dapper
-dotnet add package Microsoft.Data.Sqlite
-dotnet add package Microsoft.EntityFrameworkCore.Sqlite
-dotnet add package Scalar.AspNetCore
+* dotnet add package Bogus
+* dotnet add package Dapper
+* dotnet add package Microsoft.Data.Sqlite
+* dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+* dotnet add package Scalar.AspNetCore
+* dotnet add package FluentValidation.AspNetCore
+
 
 ### Folder Structure: 
 Controllers
@@ -26,4 +27,7 @@ Controllers.'
 ORMs services. (Dapper, EF, ... )
 IoCs.
 
---------------------------------------------
+### Features
+see commits for more information:
+1- Custome Validations
+2- Complex validation rules with FluentValidation

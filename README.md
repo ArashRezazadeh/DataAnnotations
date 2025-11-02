@@ -27,4 +27,7 @@ Controllers.'
 ORMs services. (Dapper, EF, ... )
 IoCs.
 
---------------------------------------------
+### Features
+see commits for more information:
+1- Custome Validations
+2- Complex validation rules with FluentValidation

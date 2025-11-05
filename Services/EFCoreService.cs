@@ -106,4 +106,8 @@ public class EFCoreService(IEFCoreRepository repository,  IMapper mapper) : IEFC
 
         await repository.UpdateEventRegistrationAsync(newEvent);
     }
+    public async Task DeleteEventRegistrationAsync(int id)
+    {
+        await repository.DeleteEventRegistrationAsync(id);
+    }
 }

@@ -128,7 +128,7 @@ public class DapperEventsController(IDapperService service, ILogger<DapperEvents
         {
             return BadRequest("Id is invalid or does not match the event registration.");
         }
-         try
+        try
         {
             var existingEvent = await service.GetEventRegistrationByIdAsync(id);
             if (existingEvent == null)
@@ -145,4 +145,35 @@ public class DapperEventsController(IDapperService service, ILogger<DapperEvents
             return StatusCode(500, "An error occurred while updating event registration.");
         }
     }
+    
+    [HttpDelete("{id}")]
+    [EndpointSummary("Delete an existing event registration")]
+    [EndpointDescription("DELETE to remove an existing event registration.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeleteEventRegistration(int id)
+    {
+        if (id <= 0)
+        {
+            return BadRequest("Id must be greater than 0");
+        }
+
+        try
+        {
+            var existingEvent = await service.GetEventRegistrationByIdAsync(id);
+            if (existingEvent == null)
+            {
+                return NotFound();
+            }
+
+            await service.DeleteEventRegistrationAsync(id);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while deleting event registration with Id: {Id}", id);
+            return StatusCode(500, "An error occurred while deleting event registration.");
+        }
+    } 
 }

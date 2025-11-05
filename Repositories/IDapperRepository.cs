@@ -9,4 +9,5 @@ public interface IDapperRepository
     Task<EventRegistration?> GetEventRegistrationByIdAsync(int id);
     Task<EventRegistration> CreateEventRegistrationAsync(EventRegistration eventRegistration);
     Task UpdateEventRegistrationAsync(EventRegistration eventRegistration);
+    Task DeleteEventRegistrationAsync(int id);
 }

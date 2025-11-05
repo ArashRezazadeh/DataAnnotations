@@ -106,4 +106,9 @@ public class DapperService(IDapperRepository repository, IMapper mapper) : IDapp
         var eventRegistration = mapper.Map<EventRegistration>(eventRegistrationDto);
         await repository.UpdateEventRegistrationAsync(eventRegistration);
     }
+
+    public async Task DeleteEventRegistrationAsync(int id)
+    {
+        await repository.DeleteEventRegistrationAsync(id);
+    }
 }

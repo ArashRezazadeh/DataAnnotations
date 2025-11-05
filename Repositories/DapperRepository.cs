@@ -110,4 +110,15 @@ public class DapperRepository(string connectionString) : IDapperRepository
             });
         }
     }
+
+     public async Task DeleteEventRegistrationAsync(int id)
+    {
+        using (var connection = new SqliteConnection(connectionString))
+        {
+            var query = @"
+                DELETE FROM EventRegistrations 
+                WHERE Id = @Id";
+            await connection.ExecuteAsync(query, new { Id = id });
+        }
+    }
 }

@@ -38,12 +38,27 @@ public class EFCoreRepository(AppDbContext context) : IEFCoreRepository
 
     public async Task UpdateEventRegistrationAsync(EventRegistration eventRegistration)
     {
-       if (context.EventRegistrations == null)
+        if (context.EventRegistrations == null)
         {
             throw new InvalidOperationException("EventRegistrations DbSet is null");
-        } 
+        }
 
         context.EventRegistrations.Update(eventRegistration);
         await context.SaveChangesAsync();
+    }
+    
+    public async Task DeleteEventRegistrationAsync(int id)
+    {
+        if (context.EventRegistrations == null)
+        {
+                throw new InvalidOperationException("EventRegistrations DbSet is null");
+        } 
+
+        var eventRegistration = await context.EventRegistrations.FindAsync(id);
+        if (eventRegistration != null)
+        {
+            context.EventRegistrations.Remove(eventRegistration);
+            await context.SaveChangesAsync();
+        }
     }
 }

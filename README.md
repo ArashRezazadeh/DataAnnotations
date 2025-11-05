@@ -11,6 +11,8 @@ data from the same database. We will create validation rules using .NET DataAnno
 * dotnet add package Microsoft.EntityFrameworkCore.Sqlite
 * dotnet add package Scalar.AspNetCore
 * dotnet add package FluentValidation.AspNetCore
+* dotnet add package AutoMapper
+* dotnet add package AutoMapper.Extensions.Microsoft.DependencyInjection
 
 
 ### Folder Structure: 

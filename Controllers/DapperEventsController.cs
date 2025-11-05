@@ -50,7 +50,7 @@ public class DapperEventsController(IDapperService service, ILogger<DapperEvents
             return StatusCode(500, "An error occurred while fetching event registrations.");
         }
     }
-    
+
     [HttpGet("{id}")]
     [EndpointSummary("Get a event by Id")]
     [EndpointDescription("Returns a single event registration by its Id from our SQLite database, using EF Core")]
@@ -116,4 +116,33 @@ public class DapperEventsController(IDapperService service, ILogger<DapperEvents
 
     }
 
+    [HttpPut("{id}")]
+    [EndpointSummary("Update an existing event registration")]
+    [EndpointDescription("PUT to update an existing event registration. Accepts an EventRegistrationDTO.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> PutEventRegistration(int id, [FromBody] EventRegistrationDTO eventRegistrationDto)
+    {
+        if (id <= 0 || id != eventRegistrationDto.Id)
+        {
+            return BadRequest("Id is invalid or does not match the event registration.");
+        }
+         try
+        {
+            var existingEvent = await service.GetEventRegistrationByIdAsync(id);
+            if (existingEvent == null)
+            {
+                return NotFound();
+            }
+
+            await service.UpdateEventRegistrationAsync(eventRegistrationDto);
+            return Ok(eventRegistrationDto);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while updating event registration with Id: {Id}", id);
+            return StatusCode(500, "An error occurred while updating event registration.");
+        }
+    }
 }

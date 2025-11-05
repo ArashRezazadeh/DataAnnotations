@@ -1,5 +1,7 @@
 
 
+using events.Models;
+
 public class EventRegistrationForValidationDTO
 {
     public int Id { get; set; }
@@ -15,5 +17,7 @@ public class EventRegistrationForValidationDTO
     public string ConfirmEmail { get; set; } = string.Empty;
 
     public int DaysAttending { get; set; }
+
+    public AdditionalContactInfoDTO AdditionalContact { get; set; } = new AdditionalContactInfoDTO();
 
 }

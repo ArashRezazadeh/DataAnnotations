@@ -79,4 +79,35 @@ public class DapperRepository(string connectionString) : IDapperRepository
             return (items, hasNextPage);
         }
     }
+
+    public async Task UpdateEventRegistrationAsync(EventRegistration eventRegistration)
+    {
+        using (var connection = new SqliteConnection(connectionString))
+        {
+            var query = @"
+                UPDATE EventRegistrations
+                SET FullName = @FullName,
+                    Email = @Email,
+                    EventName = @EventName,
+                    EventDate = @EventDate,
+                    DaysAttending = @DaysAttending,
+                    Notes = @Notes,
+                    PhoneNumber = @PhoneNumber,
+                    Address = @Address
+                WHERE Id = @Id";
+
+            await connection.ExecuteAsync(query, new
+            {
+                eventRegistration.FullName,
+                eventRegistration.Email,
+                eventRegistration.EventName,
+                eventRegistration.EventDate,
+                eventRegistration.DaysAttending,
+                eventRegistration.Notes,
+                eventRegistration.AdditionalContact.PhoneNumber,
+                eventRegistration.AdditionalContact.Address,
+                eventRegistration.Id
+            });
+        }
+    }
 }

@@ -20,7 +20,7 @@ public class EFCoreRepository(AppDbContext context) : IEFCoreRepository
 
     public async Task<EventRegistration?> GetEventRegistrationByIdAsync(int id)
     {
-        return await context.EventRegistrations.FindAsync(id);
+        return await context.EventRegistrations.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
     }
 
     public async Task<(IReadOnlyCollection<EventRegistration> items, bool hasNextPage)> GetEventRegistrationsAsync(int pageSize, int lastId)
@@ -34,5 +34,16 @@ public class EFCoreRepository(AppDbContext context) : IEFCoreRepository
         var hasNextPage = result.Count > pageSize;
 
         return (items, hasNextPage);
+    }
+
+    public async Task UpdateEventRegistrationAsync(EventRegistration eventRegistration)
+    {
+       if (context.EventRegistrations == null)
+        {
+            throw new InvalidOperationException("EventRegistrations DbSet is null");
+        } 
+
+        context.EventRegistrations.Update(eventRegistration);
+        await context.SaveChangesAsync();
     }
 }

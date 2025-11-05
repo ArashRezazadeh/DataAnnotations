@@ -1,4 +1,5 @@
 
+using AutoMapper;
 using DataAnnotations.Data;
 using DataAnnotations.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -7,36 +8,20 @@ using Repositories.Data;
 namespace DataAnnotations.Services;
 
 
-public class EFCoreService(IEFCoreRepository repository) : IEFCoreService
+public class EFCoreService(IEFCoreRepository repository,  IMapper mapper) : IEFCoreService
 {
     public async Task<EventRegistrationDTO> CreateEventRegistrationAsync(EventRegistrationDTO eventRegistrationDTO)
     {
-        var eventRegistration = new EventRegistration
-        {
-            FullName = eventRegistrationDTO.FullName,
-            Email = eventRegistrationDTO.Email,
-            EventName = eventRegistrationDTO.EventName,
-            EventDate = eventRegistrationDTO.EventDate,
-            DaysAttending = eventRegistrationDTO.DaysAttending
-        };
+        var eventRegistration = mapper.Map<EventRegistration>(eventRegistrationDTO);
 
         var result = await repository.CreateEventRegistrationAsync(eventRegistration);
 
-        return new EventRegistrationDTO
-        {
-            Id = result.Id,
-            FullName = result.FullName,
-            Email = result.Email,
-            EventName = result.EventName,
-            EventDate = result.EventDate,
-            ConfirmEmail = result.Email,
-            DaysAttending = result.DaysAttending
-        };
+        return mapper.Map<EventRegistrationDTO>(result);
     }
 
     public async Task<EventRegistrationForValidationDTO> CreateEventRegistrationAsync(EventRegistrationForValidationDTO eventRegistrationDTO)
     {
-                var eventRegistration = new EventRegistration
+         var eventRegistration = new EventRegistration
         {
             FullName = eventRegistrationDTO.FullName,
             Email = eventRegistrationDTO.Email,
@@ -113,5 +98,12 @@ public class EFCoreService(IEFCoreRepository repository) : IEFCoreService
             NextPageUrl = nextPageUrl,
             PageSize = pageSize
         };
+    }
+
+    public async Task UpdateEventRegistrationAsync(EventRegistrationForValidationDTO eventRegistrationDto)
+    {
+        var newEvent = mapper.Map<EventRegistration>(eventRegistrationDto);
+
+        await repository.UpdateEventRegistrationAsync(newEvent);
     }
 }

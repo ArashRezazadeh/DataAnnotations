@@ -1,5 +1,7 @@
 
 
+using events.Models;
+
 namespace DataAnnotations.Data;
 
 public class EventRegistration
@@ -19,4 +21,5 @@ public class EventRegistration
     public int DaysAttending { get; set; }
 
     public string Notes { get; set; } = string.Empty;
+    public AdditionalContactInfo AdditionalContact { get; set; } = new AdditionalContactInfo();
 }

@@ -3,6 +3,7 @@ using Dapper;
 using DataAnnotations.Data;
 using DataAnnotations.Models;
 using DataAnnotations.Services;
+using events.Models;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Data.Sqlite;
@@ -38,7 +39,7 @@ builder.Services.AddSingleton<IDapperRepository>(new DapperRepository(connection
 builder.Services.AddScoped<IDapperService, DapperService>();
 
 SqlMapper.AddTypeHandler(new GuidTypeHandler());
-
+builder.Services.AddAutoMapper(typeof(EventProfile));
 
 var app = builder.Build();
 app.UseResponseCaching();
@@ -62,7 +63,9 @@ using (var connection = new SqliteConnection(connectionStringBuilder.ConnectionS
             EventName TEXT,
             EventDate TEXT,
             DaysAttending INTEGER,
-            Notes TEXT
+            Notes TEXT,
+            PhoneNumber TEXT,
+            Address TEXT
         )
     ";
 
@@ -75,23 +78,32 @@ using (var connection = new SqliteConnection(connectionStringBuilder.ConnectionS
 
     if(count == 0)
     {
+
+        var additionalContactFaker = new Faker<AdditionalContactInfo>()
+            .RuleFor(ac => ac.PhoneNumber, f => f.Phone.PhoneNumber())
+            .RuleFor(ac => ac.Address, f => f.Address.FullAddress());
+
+
         var faker = new Faker<EventRegistration>()
             .RuleFor(e => e.GUID, f => Guid.NewGuid())
             .RuleFor(e => e.FullName, f => f.Name.FullName())
             .RuleFor(e => e.Email, f => f.Internet.Email())
             .RuleFor(e => e.EventName, f => f.Lorem.Word())
-            .RuleFor(e => e.EventDate, f => f.Date.Future())
+            .RuleFor(e => e.EventDate, f => f.Date.Future())    
             .RuleFor(e => e.DaysAttending, f => f.Random.Int(1, 7))
-            .RuleFor(e => e.Notes, f => f.Lorem.Sentence());
+            .RuleFor(e => e.Notes, f => f.Lorem.Sentence())
+            .RuleFor(e => e.AdditionalContact, f => additionalContactFaker.Generate());
+
 
         var registrations = faker.Generate(10000);
 
         using (var transaction = connection.BeginTransaction())
         {
             var insertCommand = connection.CreateCommand();
-            insertCommand.CommandText = @"
-                INSERT INTO EventRegistrations (GUID, FullName, Email, EventName, EventDate, DaysAttending, Notes)
-                VALUES (@GUID, @FullName, @Email, @EventName, @EventDate, @DaysAttending, @Notes)";
+            insertCommand.CommandText = @"  
+                INSERT INTO EventRegistrations (GUID, FullName, Email, EventName, EventDate, DaysAttending, Notes, PhoneNumber, Address)
+                VALUES (@GUID, @FullName, @Email, @EventName, @EventDate, @DaysAttending, @Notes, @PhoneNumber, @Address)
+            ";
 
             insertCommand.Transaction = transaction;
             foreach (var registration in registrations)
@@ -104,6 +116,8 @@ using (var connection = new SqliteConnection(connectionStringBuilder.ConnectionS
                 insertCommand.Parameters.AddWithValue("@EventDate", registration.EventDate.ToString("yyyy-MM-dd"));
                 insertCommand.Parameters.AddWithValue("@DaysAttending", registration.DaysAttending);
                 insertCommand.Parameters.AddWithValue("@Notes", registration.Notes);
+                insertCommand.Parameters.AddWithValue("@PhoneNumber", registration.AdditionalContact.PhoneNumber);
+                insertCommand.Parameters.AddWithValue("@Address", registration.AdditionalContact.Address);
                 insertCommand.ExecuteNonQuery();
 
             }

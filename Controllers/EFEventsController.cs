@@ -81,4 +81,36 @@ public class EFEventsController(IEFCoreService service, ILogger<EFEventsControll
             return StatusCode(500, "An error occurred while fetching event registration by Id.");
         }
     }
+
+    [HttpPut("{id}")]
+    [EndpointSummary("Update an existing event registration")]
+    [EndpointDescription("PUT to update an existing event registration. Accepts an EventRegistrationDTO.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> PutEventRegistration(int id, [FromBody] EventRegistrationForValidationDTO eventRegistrationDto)
+    {
+        if (id <= 0 || id != eventRegistrationDto.Id)
+        {
+            return BadRequest("Id is invalid or does not match the event registration.");
+        }
+
+        try
+        {
+            var existingEvent = await service.GetEventRegistrationByIdAsync(id);
+            if (existingEvent == null)
+            {
+                return NotFound();
+            }
+
+            await service.UpdateEventRegistrationAsync(eventRegistrationDto);
+
+            return Ok(eventRegistrationDto);
+        }
+        catch (System.Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while updating event registration with Id: {Id}", id);
+            return StatusCode(500, "An error occurred while updating event registration.");
+        }
+    }
 }

@@ -1,3 +1,4 @@
+using AutoMapper;
 using DataAnnotations.Models;
 using DataAnnotations.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -5,18 +6,19 @@ using Repositories.Data;
 
 namespace DataAnnotations.Data;
 
-public class DapperService(IDapperRepository repository) : IDapperService
+public class DapperService(IDapperRepository repository, IMapper mapper) : IDapperService
 {
     public async Task<EventRegistrationDTO> CreateEventRegistrationAsync(EventRegistrationDTO eventRegistrationDTO)
     {
-        var eventRegistration = new EventRegistration
-        {
-            FullName = eventRegistrationDTO.FullName,
-            Email = eventRegistrationDTO.Email,
-            EventName = eventRegistrationDTO.EventName,
-            EventDate = eventRegistrationDTO.EventDate,
-            DaysAttending = eventRegistrationDTO.DaysAttending
-        };
+        // var eventRegistration = new EventRegistration
+        // {
+        //     FullName = eventRegistrationDTO.FullName,
+        //     Email = eventRegistrationDTO.Email,
+        //     EventName = eventRegistrationDTO.EventName,
+        //     EventDate = eventRegistrationDTO.EventDate,
+        //     DaysAttending = eventRegistrationDTO.DaysAttending
+        // };
+        var eventRegistration = mapper.Map<EventRegistration>(eventRegistrationDTO);
 
         var result = await repository.CreateEventRegistrationAsync(eventRegistration);
 
@@ -44,7 +46,7 @@ public class DapperService(IDapperRepository repository) : IDapperService
         };
 
         var result = await repository.CreateEventRegistrationAsync(eventRegistration);
-
+    
         return new EventRegistrationForValidationDTO
         {
             Id = result.Id,
@@ -62,16 +64,7 @@ public class DapperService(IDapperRepository repository) : IDapperService
         var eventRegistration = await repository.GetEventRegistrationByIdAsync(id);
         if (eventRegistration == null) return null;
 
-        return new EventRegistrationDTO
-        {
-            Id = eventRegistration.Id,
-            FullName = eventRegistration.FullName,
-            Email = eventRegistration.Email,
-            EventName = eventRegistration.EventName,
-            EventDate = eventRegistration.EventDate,
-            ConfirmEmail = eventRegistration.Email,
-            DaysAttending = eventRegistration.DaysAttending,
-        };
+        return mapper.Map<EventRegistrationDTO>(eventRegistration);
     }
 
     public async Task<PagedResult<EventRegistrationDTO>> GetEventRegistrationsAsync(int pageSize, int lastId, IUrlHelper urlHelper)
@@ -106,5 +99,11 @@ public class DapperService(IDapperRepository repository) : IDapperService
             NextPageUrl = nextPageUrl,
             PageSize = pageSize
         };
+    }
+
+    public async Task UpdateEventRegistrationAsync(EventRegistrationDTO eventRegistrationDto)
+    {
+        var eventRegistration = mapper.Map<EventRegistration>(eventRegistrationDto);
+        await repository.UpdateEventRegistrationAsync(eventRegistration);
     }
 }

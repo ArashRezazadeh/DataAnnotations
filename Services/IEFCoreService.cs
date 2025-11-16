@@ -12,5 +12,6 @@ public interface IEFCoreService
     Task<EventRegistrationDTO> CreateEventRegistrationAsync(EventRegistrationDTO eventRegistrationDTO);
     Task<EventRegistrationForValidationDTO> CreateEventRegistrationAsync(EventRegistrationForValidationDTO eventRegistrationDTO);
     Task UpdateEventRegistrationAsync(EventRegistrationForValidationDTO eventRegistrationDto);
+    Task UpdateEventRegistrationAsync(EventRegistrationDTO eventRegistration);
     Task DeleteEventRegistrationAsync(int id);
 }

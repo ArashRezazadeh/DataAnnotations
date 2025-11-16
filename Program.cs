@@ -1,11 +1,13 @@
 using Bogus;
 using Dapper;
 using DataAnnotations.Data;
+using DataAnnotations.Middleware;
 using DataAnnotations.Models;
 using DataAnnotations.Services;
 using events.Models;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Data;
@@ -25,6 +27,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<EventRegistrationDTOValidator>();
 
@@ -38,10 +41,25 @@ var connectionString = "DataSource=./Data/SqliteDB.db";
 builder.Services.AddSingleton<IDapperRepository>(new DapperRepository(connectionString));
 builder.Services.AddScoped<IDapperService, DapperService>();
 
+
+// For HttpOnly Middleware
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 SqlMapper.AddTypeHandler(new GuidTypeHandler());
 builder.Services.AddAutoMapper(typeof(EventProfile));
 
 var app = builder.Build();
+
+// For HttpOnly Middleware
+app.UseForwardedHeaders();
+app.UseMiddleware<HttpOnlyMiddleware>();
+
+
 app.UseResponseCaching();
 app.MapControllers();
 

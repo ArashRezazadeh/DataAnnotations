@@ -110,4 +110,10 @@ public class EFCoreService(IEFCoreRepository repository,  IMapper mapper) : IEFC
     {
         await repository.DeleteEventRegistrationAsync(id);
     }
+
+    public async Task UpdateEventRegistrationAsync(EventRegistrationDTO eventRegistrationDto)
+    {
+        var newEvent = mapper.Map<EventRegistration>(eventRegistrationDto);
+        await repository.UpdateEventRegistrationAsync(newEvent);
+    }
 }

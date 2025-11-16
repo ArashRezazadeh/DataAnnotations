@@ -3,6 +3,7 @@
 using System.Text.Json;
 using DataAnnotations.Models;
 using DataAnnotations.Services;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DataAnnotations.Controllers;
@@ -114,7 +115,7 @@ public class EFEventsController(IEFCoreService service, ILogger<EFEventsControll
         }
     }
 
-     [HttpDelete("{id}")]
+    [HttpDelete("{id}")]
     [EndpointSummary("Delete an existing event registration")]
     [EndpointDescription("DELETE to remove an existing event registration.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -144,4 +145,44 @@ public class EFEventsController(IEFCoreService service, ILogger<EFEventsControll
             return StatusCode(500, "An error occurred while deleting event registration.");
         }
     } 
+    
+    [HttpPatch("{id}")]
+    [Consumes("application/json-patch+json")]
+    [EndpointSummary("Partially update an existing event registration")]
+    [EndpointDescription("PATCH to update specific fields of an existing event registration.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> PatchEventRegistration(int id, [FromBody] JsonPatchDocument<EventRegistrationDTO> patchDoc)
+    {
+        if (patchDoc == null || id <= 0)
+        {
+            return BadRequest("Invalid request");
+        }
+
+        try
+        {
+            var existingEvent = await service.GetEventRegistrationByIdAsync(id);
+            if (existingEvent == null)
+            {
+                return NotFound();
+            }
+
+            patchDoc.ApplyTo(existingEvent, ModelState);
+
+            if (!TryValidateModel(existingEvent))
+            {
+                return BadRequest(ModelState);
+            }
+
+            await service.UpdateEventRegistrationAsync(existingEvent);
+            return Ok(existingEvent);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while patching event registration with Id: {Id}", id);
+            return StatusCode(500, "An error occurred while patching event registration.");
+        }
+    }
 }

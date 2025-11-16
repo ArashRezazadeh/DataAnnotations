@@ -36,17 +36,17 @@ IoCs.
 
 ### Validations
 see commits for more information:
-1- Custome Validations
-2- Complex validation rules with FluentValidation
+* Custome Validations
+* Complex validation rules with FluentValidation
 
 ### ORMs
-1- Dapper
-2- EntityFrameWork
+* Dapper
+* EntityFrameWork
 
 ### Security
-1- Rejecting HTTP requests with custom ProblemDetails middleware.
-2- Setting up HTTPS on a custom domain – creating a self-signed certificate with   PowerShell
-3- Setting up ASP.NET Core Identity
-4- Using cookie authentication in ASP.NET Core Web API
-5- JWT authentication with Identity
-6- Implementing policy-based and role-based authentication
+* Rejecting HTTP requests with custom ProblemDetails middleware.
+* Setting up HTTPS on a custom domain – creating a self-signed certificate with   PowerShell
+* Setting up ASP.NET Core Identity
+* Using cookie authentication in ASP.NET Core Web API
+* JWT authentication with Identity
+* Implementing policy-based and role-based authentication

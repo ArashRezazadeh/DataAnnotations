@@ -13,6 +13,8 @@ data from the same database. We will create validation rules using .NET DataAnno
 * dotnet add package FluentValidation.AspNetCore
 * dotnet add package AutoMapper
 * dotnet add package AutoMapper.Extensions.Microsoft.DependencyInjection
+* dotnet add package Microsoft.AspNetCore.JsonPatch
+* dotnet add package Microsoft.AspNetCore.Mvc.NewtonSoftJson
 
 ### Certificattion (to test locally)
 * dotnet dev-certs https --trust

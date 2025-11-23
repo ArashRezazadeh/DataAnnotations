@@ -8,9 +8,12 @@ using events.Models;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Data;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +35,11 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<EventRegistrationDTOValidator>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("DataSource=./Data/SqliteDB.db" ));
+    options.UseSqlite("DataSource=./Data/SqliteDB.db"));
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>() 
+    .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<IEFCoreRepository, EFCoreRepository>();
 builder.Services.AddScoped<IEFCoreService, EFCoreService>();
@@ -61,6 +68,10 @@ app.UseMiddleware<HttpOnlyMiddleware>();
 
 
 app.UseResponseCaching();
+
+app.UseCors();
+app.UseAuthentication();
+
 app.MapControllers();
 
 var connectionStringBuilder = new SqliteConnectionStringBuilder();

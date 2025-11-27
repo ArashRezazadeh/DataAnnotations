@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 
 
@@ -38,8 +39,37 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("DataSource=./Data/SqliteDB.db"));
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-    .AddEntityFrameworkStores<AppDbContext>() 
+    .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+}).AddCookie(options =>
+{
+    options.Cookie.Name = "Auth";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    options.SlidingExpiration = true;
+    options.Events = new CookieAuthenticationEvents
+    {
+        OnRedirectToLogin = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        },
+        OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
+        }
+    };
+});
+
 
 builder.Services.AddScoped<IEFCoreRepository, EFCoreRepository>();
 builder.Services.AddScoped<IEFCoreService, EFCoreService>();
@@ -71,91 +101,98 @@ app.UseResponseCaching();
 
 app.UseCors();
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 
 var connectionStringBuilder = new SqliteConnectionStringBuilder();
 connectionStringBuilder.DataSource  = "./Data/SqliteDB.db";
 
-using (var connection = new SqliteConnection(connectionStringBuilder.ConnectionString))
-{
-    connection.Open();
-
-    var createTableCommand = connection.CreateCommand();
-
-    createTableCommand.CommandText = @"
-        CREATE TABLE IF NOT EXISTS EventRegistrations (
-            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-            GUID TEXT,
-            FullName TEXT,
-            Email TEXT,
-            EventName TEXT,
-            EventDate TEXT,
-            DaysAttending INTEGER,
-            Notes TEXT,
-            PhoneNumber TEXT,
-            Address TEXT
-        )
-    ";
-
-    createTableCommand.ExecuteNonQuery();
-
-    var checkTableCommand = connection.CreateCommand();
-    checkTableCommand.CommandText = "SELECT COUNT(*) FROM EventRegistrations";
-
-    var count = Convert.ToInt64(checkTableCommand.ExecuteScalar());
-
-    if(count == 0)
-    {
-
-        var additionalContactFaker = new Faker<AdditionalContactInfo>()
-            .RuleFor(ac => ac.PhoneNumber, f => f.Phone.PhoneNumber())
-            .RuleFor(ac => ac.Address, f => f.Address.FullAddress());
 
 
-        var faker = new Faker<EventRegistration>()
-            .RuleFor(e => e.GUID, f => Guid.NewGuid())
-            .RuleFor(e => e.FullName, f => f.Name.FullName())
-            .RuleFor(e => e.Email, f => f.Internet.Email())
-            .RuleFor(e => e.EventName, f => f.Lorem.Word())
-            .RuleFor(e => e.EventDate, f => f.Date.Future())    
-            .RuleFor(e => e.DaysAttending, f => f.Random.Int(1, 7))
-            .RuleFor(e => e.Notes, f => f.Lorem.Sentence())
-            .RuleFor(e => e.AdditionalContact, f => additionalContactFaker.Generate());
+// using (var connection = new SqliteConnection(connectionStringBuilder.ConnectionString))
+// {
+//     connection.Open();
+
+//     var createTableCommand = connection.CreateCommand();
+
+//     createTableCommand.CommandText = @"
+//         CREATE TABLE IF NOT EXISTS EventRegistrations (
+//             Id INTEGER PRIMARY KEY AUTOINCREMENT,
+//             GUID TEXT,
+//             FullName TEXT,
+//             Email TEXT,
+//             EventName TEXT,
+//             EventDate TEXT,
+//             DaysAttending INTEGER,
+//             Notes TEXT,
+//             PhoneNumber TEXT,
+//             Address TEXT
+//         )
+//     ";
+
+//     createTableCommand.ExecuteNonQuery();
+
+//     var checkTableCommand = connection.CreateCommand();
+//     checkTableCommand.CommandText = "SELECT COUNT(*) FROM EventRegistrations";
+
+//     var count = Convert.ToInt64(checkTableCommand.ExecuteScalar());
+
+//     if(count == 0)
+//     {
+
+//         var additionalContactFaker = new Faker<AdditionalContactInfo>()
+//             .RuleFor(ac => ac.PhoneNumber, f => f.Phone.PhoneNumber())
+//             .RuleFor(ac => ac.Address, f => f.Address.FullAddress());
 
 
-        var registrations = faker.Generate(10000);
+//         var faker = new Faker<EventRegistration>()
+//             .RuleFor(e => e.GUID, f => Guid.NewGuid())
+//             .RuleFor(e => e.FullName, f => f.Name.FullName())
+//             .RuleFor(e => e.Email, f => f.Internet.Email())
+//             .RuleFor(e => e.EventName, f => f.Lorem.Word())
+//             .RuleFor(e => e.EventDate, f => f.Date.Future())    
+//             .RuleFor(e => e.DaysAttending, f => f.Random.Int(1, 7))
+//             .RuleFor(e => e.Notes, f => f.Lorem.Sentence())
+//             .RuleFor(e => e.AdditionalContact, f => additionalContactFaker.Generate());
 
-        using (var transaction = connection.BeginTransaction())
-        {
-            var insertCommand = connection.CreateCommand();
-            insertCommand.CommandText = @"  
-                INSERT INTO EventRegistrations (GUID, FullName, Email, EventName, EventDate, DaysAttending, Notes, PhoneNumber, Address)
-                VALUES (@GUID, @FullName, @Email, @EventName, @EventDate, @DaysAttending, @Notes, @PhoneNumber, @Address)
-            ";
 
-            insertCommand.Transaction = transaction;
-            foreach (var registration in registrations)
-            {
-                insertCommand.Parameters.Clear();
-                insertCommand.Parameters.AddWithValue("@GUID", registration.GUID);
-                insertCommand.Parameters.AddWithValue("@FullName", registration.FullName);
-                insertCommand.Parameters.AddWithValue("@Email", registration.Email);
-                insertCommand.Parameters.AddWithValue("@EventName", registration.EventName);
-                insertCommand.Parameters.AddWithValue("@EventDate", registration.EventDate.ToString("yyyy-MM-dd"));
-                insertCommand.Parameters.AddWithValue("@DaysAttending", registration.DaysAttending);
-                insertCommand.Parameters.AddWithValue("@Notes", registration.Notes);
-                insertCommand.Parameters.AddWithValue("@PhoneNumber", registration.AdditionalContact.PhoneNumber);
-                insertCommand.Parameters.AddWithValue("@Address", registration.AdditionalContact.Address);
-                insertCommand.ExecuteNonQuery();
+//         var registrations = faker.Generate(10000);
 
-            }
+//         using (var transaction = connection.BeginTransaction())
+//         {
+//             var insertCommand = connection.CreateCommand();
+//             insertCommand.CommandText = @"  
+//                 INSERT INTO EventRegistrations (GUID, FullName, Email, EventName, EventDate, DaysAttending, Notes, PhoneNumber, Address)
+//                 VALUES (@GUID, @FullName, @Email, @EventName, @EventDate, @DaysAttending, @Notes, @PhoneNumber, @Address)
+//             ";
 
-            transaction.Commit();
-        }
-    }
-}
+//             insertCommand.Transaction = transaction;
+//             foreach (var registration in registrations)
+//             {
+//                 insertCommand.Parameters.Clear();
+//                 insertCommand.Parameters.AddWithValue("@GUID", registration.GUID);
+//                 insertCommand.Parameters.AddWithValue("@FullName", registration.FullName);
+//                 insertCommand.Parameters.AddWithValue("@Email", registration.Email);
+//                 insertCommand.Parameters.AddWithValue("@EventName", registration.EventName);
+//                 insertCommand.Parameters.AddWithValue("@EventDate", registration.EventDate.ToString("yyyy-MM-dd"));
+//                 insertCommand.Parameters.AddWithValue("@DaysAttending", registration.DaysAttending);
+//                 insertCommand.Parameters.AddWithValue("@Notes", registration.Notes);
+//                 insertCommand.Parameters.AddWithValue("@PhoneNumber", registration.AdditionalContact.PhoneNumber);
+//                 insertCommand.Parameters.AddWithValue("@Address", registration.AdditionalContact.Address);
+//                 insertCommand.ExecuteNonQuery();
+
+//             }
+
+//             transaction.Commit();
+//         }
+//     }
+// }
 
 
 app.Run();
 
+
+// Note: 
+// Before using Identity for the first time, you must delete the SqlliteDB.db file and run 
+// dotnet ef database update to create a new database. Otherwise, the Identity tables will not be created.

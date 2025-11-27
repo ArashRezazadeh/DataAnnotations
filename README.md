@@ -95,3 +95,7 @@ see commits for more information:
     dotnet ef migrations add IdentitySchema
     dotnet ef database update
     dotnet run
+
+Note: 
+`Before using Identity for the first time, you must delete the SqlliteDB.db file and run 
+ dotnet ef database update to create a new database. Otherwise, the Identity tables will not be created.`

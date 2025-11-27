@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DataAnnotations.Models;
 using DataAnnotations.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DataAnnotations.Controllers;
@@ -145,7 +146,7 @@ public class DapperEventsController(IDapperService service, ILogger<DapperEvents
             return StatusCode(500, "An error occurred while updating event registration.");
         }
     }
-    
+
     [HttpDelete("{id}")]
     [EndpointSummary("Delete an existing event registration")]
     [EndpointDescription("DELETE to remove an existing event registration.")]
@@ -176,4 +177,6 @@ public class DapperEventsController(IDapperService service, ILogger<DapperEvents
             return StatusCode(500, "An error occurred while deleting event registration.");
         }
     } 
+    
+
 }

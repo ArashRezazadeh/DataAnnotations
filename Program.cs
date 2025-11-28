@@ -13,6 +13,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using DataAnnotations.Extensions;
 
 
 
@@ -42,34 +43,17 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-}).AddCookie(options =>
-{
-    options.Cookie.Name = "Auth";
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = SameSiteMode.Strict;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-    options.SlidingExpiration = true;
-    options.Events = new CookieAuthenticationEvents
-    {
-        OnRedirectToLogin = context =>
-        {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            return Task.CompletedTask;
-        },
-        OnRedirectToAccessDenied = context =>
-        {
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            return Task.CompletedTask;
-        }
-    };
-});
 
+// Auth using Cookie
+// builder.Services.AddCookieAuthentication();
+
+
+
+// Auth using Jwt
+// ========================================
+builder.Services.AddJwtAuthenticationWithKeyFile(
+    builder.Configuration, 
+    builder.Environment);
 
 builder.Services.AddScoped<IEFCoreRepository, EFCoreRepository>();
 builder.Services.AddScoped<IEFCoreService, EFCoreService>();

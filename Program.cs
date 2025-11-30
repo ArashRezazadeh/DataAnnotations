@@ -31,17 +31,28 @@ builder.Services.AddCors(options =>
    
 });
 
-builder.Services.AddControllers();
-builder.Services.AddControllers().AddNewtonsoftJson();
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<EventRegistrationDTOValidator>();
-
+// 1. First - Database & Identity
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("DataSource=./Data/SqliteDB.db"));
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
+
+// 2. Second - Authorization Policies (BEFORE controllers!)
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("UsernameStartsWithL", policy =>
+        policy.RequireAssertion(context =>
+            context.User.Identity?.Name != null &&
+            context.User.Identity.Name.StartsWith("L", StringComparison.OrdinalIgnoreCase)));
+});
+
+// 3. Third - Controllers and other services
+builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<EventRegistrationDTOValidator>();
 
 
 // Auth using Cookie
@@ -91,6 +102,7 @@ app.MapControllers();
 
 var connectionStringBuilder = new SqliteConnectionStringBuilder();
 connectionStringBuilder.DataSource  = "./Data/SqliteDB.db";
+
 
 
 

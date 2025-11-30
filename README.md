@@ -2,6 +2,8 @@
 
 Developed simple API endpoints by utilizing essential ASP.NET framework features.
 
+### vs code Extensions: 
+* alexcvzz.vscode-sqlite
 
 ### Packages: 
 * dotnet add package Bogus

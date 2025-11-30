@@ -43,6 +43,7 @@ public static class AuthenticationExtensions
 
         return services;
     }
+    
     public static IServiceCollection AddJwtAuthenticationWithKeyFile(
         this IServiceCollection services, 
         IConfiguration configuration, 

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 
 namespace DataAnnotations.Controllers;
@@ -41,18 +42,27 @@ public class AccountController(UserManager<IdentityUser> userManager, JwtSetting
         return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
     }
 
-    [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginDTO model)
+    [HttpPost("login-with-Cookie")]
+    public async Task<IActionResult> LoginWithCookie(LoginDTO model)
     {
         var user = await userManager.FindByEmailAsync(model.Email);
         if (user != null && await userManager.CheckPasswordAsync(user, model.Password))
         {
-            // Login using Cookies
-            // await SignInAsync(user);
-            // return Ok(new { message = "User logged in successfully" });
+            // to use Cookies you have to enable cookie authentication in prgram.cs
+            await SignInAsync(user);
+            return Ok(new { message = "User logged in successfully" });
 
+        }
+        return Unauthorized(new { message = "Invalid login attempt" });
+    }
 
-            // Login using JWT Toke
+    [HttpPost("login-with-jwt")]
+    public async Task<IActionResult> LoginWithJwt(LoginDTO model)
+    {
+        var user = await userManager.FindByEmailAsync(model.Email);
+        if (user != null && await userManager.CheckPasswordAsync(user, model.Password))
+        {
+            // to use Jwt you have to enable cookie authentication in prgram.cs
             var token = GenerateJwtToken(user);
             return Ok(token);
         }
@@ -93,11 +103,34 @@ public class AccountController(UserManager<IdentityUser> userManager, JwtSetting
 
 
     [Authorize]
-    [HttpGet("authtest")]
-    public IActionResult AuthTest()
+    [HttpGet("authtest-cookie")]
+    public IActionResult AuthTestCookie()
     {
         return Ok("This endpoint is secured");
     }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpGet("authtest-jwt")]
+    public IActionResult AuthTestJwt()
+    {
+        return Ok("This endpoint is secured");
+    }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "Admin")]
+    [HttpGet("auth-role-test")]
+    public IActionResult AuthRoleTest()
+    {
+        return Ok("This endpoint is secured");
+    }
+
+    [HttpGet("L-users")]
+    [Authorize(Policy = "UsernameStartsWithL")]
+    public IActionResult LUsersOnly()
+    {
+        return Ok("Your username starts with 'L'!");
+    }
+
 
 
 
@@ -123,19 +156,37 @@ public class AccountController(UserManager<IdentityUser> userManager, JwtSetting
         }
     }
 
-    private string GenerateJwtToken(IdentityUser user)
+    private async Task<string> GenerateJwtToken(IdentityUser user)
     {
+
+        if (string.IsNullOrEmpty(user.UserName))
+        {
+            throw new InvalidOperationException("User does not have a valid username");
+        }
+
         Console.WriteLine($"GenerateJwtToken: JwtSettings Key length: {jwtSettings.Key?.Length ?? 0}");
         if (string.IsNullOrEmpty(jwtSettings.Key))
         {
             throw new InvalidOperationException("JWT key is null or empty");
         }
-        var claims = new[]
+
+
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Email ?? ""),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.Id)
         };
+
+
+        var userRoles = await userManager.GetRolesAsync(user);
+
+        foreach (var role in userRoles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+        
+        claims.Add(new Claim(ClaimTypes.Name, user.UserName));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

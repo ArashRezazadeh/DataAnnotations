@@ -14,6 +14,7 @@ using Repositories.Data;
 using DataAnnotations.Extensions;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Data;
 
 
 
@@ -52,6 +53,7 @@ builder.Services.AddAuthorization(options =>
 // 3. Third - Controllers and other services
 builder.Services.AddControllers();
 builder.Services.AddControllers().AddNewtonsoftJson();
+
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<EventRegistrationDTOValidator>();
 
@@ -75,6 +77,8 @@ builder.Services.AddSingleton<IDapperRepository>(new DapperRepository(connection
 builder.Services.AddScoped<IDapperService, DapperService>();
 
 
+builder.Services.AddTransient<IDbConnection>(sp => 
+    new SqliteConnection(connectionString));
 
 // For HttpOnly Middleware
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -87,21 +91,11 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 SqlMapper.AddTypeHandler(new GuidTypeHandler());
 builder.Services.AddAutoMapper(typeof(EventProfile));
 
+
+// To check the health use  https://localhost:5001/api/health
 builder.Services.AddHealthChecks()
-    .AddCheck("Database", () =>
-    {
-        using var connection = new SqliteConnection(
-            builder.Configuration.GetConnectionString("DefaultConnection"));
-        try
-        {
-            connection.Open();
-            return HealthCheckResult.Healthy();
-        }
-        catch (SqliteException)
-        {
-            return HealthCheckResult.Unhealthy();
-        }
-    }, tags: new[] { "database" });
+    .AddCheck<DatabasePerformanceHealthCheck>("database_performance", 
+        tags: ["database"]);
 
 
 var app = builder.Build();

@@ -20,6 +20,7 @@ Developed simple API endpoints by utilizing essential ASP.NET framework features
 * dotnet add package Microsoft.EntityFrameworkCore.Design --version 9.0.10
 * dotnet tool install --global dotnet-ef
 * dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 9.0.0
+* dotnet add package Microsoft.Extensions.Diagnostics.HealthChecks --version 9.0.0
 
 
 ### Certificattion (to test locally)

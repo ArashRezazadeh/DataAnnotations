@@ -103,6 +103,7 @@ var app = builder.Build();
 // For HttpOnly Middleware
 app.UseForwardedHeaders();
 app.UseMiddleware<HttpOnlyMiddleware>();
+app.UseMiddleware<AddHeadersMiddleware>();
 
 
 app.UseResponseCaching();

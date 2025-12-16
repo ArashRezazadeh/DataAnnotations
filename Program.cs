@@ -50,6 +50,8 @@ builder.Services.AddAuthorization(options =>
             context.User.Identity.Name.StartsWith("L", StringComparison.OrdinalIgnoreCase)));
 });
 
+
+builder.Services.AddTransient<XmlFormatterMiddleware>();
 // 3. Third - Controllers and other services
 builder.Services.AddControllers();
 builder.Services.AddControllers().AddNewtonsoftJson();
@@ -102,6 +104,7 @@ var app = builder.Build();
 
 // For HttpOnly Middleware
 app.UseForwardedHeaders();
+app.UseMiddleware<XmlFormatterMiddleware>();
 app.UseMiddleware<HttpOnlyMiddleware>();
 app.UseMiddleware<AddHeadersMiddleware>();
 

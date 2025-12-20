@@ -56,7 +56,6 @@ public static class AuthenticationExtensions
         // Read JWT key from file
         string keyPath = Path.Combine(environment.ContentRootPath, keyFileName);
         string jwtKey = File.ReadAllText(keyPath).Trim();
-        Console.WriteLine($"jwtKey is {jwtKey}");
 
         // Create JwtSettings instance
         var jwtSettings = new JwtSettings

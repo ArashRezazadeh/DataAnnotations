@@ -1,0 +1,19 @@
+services:
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    ports:
+      - '5341:80'
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORD=YourStrongPassword123! 
+    volumes:
+      - seq_data:/data
+volumes:
+  seq_data:
+
+# use "docker compose ps" if log server is not up then use "docker compose up -d" command in terminal 
+
+# docker compose down - stops and removes the container
+
+# docker compose logs - view Seq's own logs

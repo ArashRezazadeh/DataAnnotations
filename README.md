@@ -21,7 +21,8 @@ Developed simple API endpoints by utilizing essential ASP.NET framework features
 * dotnet tool install --global dotnet-ef
 * dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 9.0.0
 * dotnet add package Microsoft.Extensions.Diagnostics.HealthChecks --version 9.0.0
-
+* dotnet add package Serilog.AspNetCore
+* dotnet add package Serilog.Sinks.Seq
 
 ### Certificattion (to test locally)
 * dotnet dev-certs https --trust

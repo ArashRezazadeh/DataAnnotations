@@ -25,6 +25,7 @@ try
     Log.Information("Starting Web API");
 
     builder.ConfigureLogging();
+    builder.Services.AddSingleton<DiagnosticContextEnricher>();
 
     builder.Services.AddCors(options =>
     {
@@ -105,7 +106,20 @@ try
 
     var app = builder.Build();
 
-    app.UseSerilogRequestLogging();
+    app.UseSerilogRequestLogging(options => 
+    {
+        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) => {
+        var enricher = httpContext.RequestServices.GetRequiredService<DiagnosticContextEnricher>();
+        enricher.EnrichFromRequest(diagnosticContext, httpContext);
+
+        options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms. IP: {ClientIP}, Endpoint: {EndpointName}, Cached: {IsCached}, Query: {QueryParameters}";
+
+        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value ?? "");
+        diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+        diagnosticContext.Set("QueryString", httpContext.Request.QueryString.Value ?? "");
+
+        };
+    });
     
     // For HttpOnly Middleware
     app.UseForwardedHeaders();
